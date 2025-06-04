@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ..ai_generator import generate_challenge_with_ai
+from ..ai_generator import generate_questions_with_ai
 from ..database.db import (
     get_challenge_quota,
     create_challenge,
@@ -40,8 +40,9 @@ async def generate_challenge(request: ChallengeRequest, request_obj: Request, db
         if quota.quota_remaining <= 0:
             raise HTTPException(status_code=429, detail="Quota exhausted")
 
-        challenge_data = generate_challenge_with_ai(request.difficulty)
-
+        challenge_data = generate_questions_with_ai(request.difficulty)
+        
+        #Add to db
         new_challenge = create_challenge(
             db=db,
             difficulty=request.difficulty,

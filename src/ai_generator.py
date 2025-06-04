@@ -44,12 +44,12 @@ def generate_questions_with_ai(difficulty: str) -> Dict[str, Any]:
         )
         # print("One step to content")
         content = response.choices[0].message.content
-        print("🔥🔥🔥START", content, "🔥🔥🔥END")
-        cont1 = content.split("``")[1].replace("`", "```")
-        print("🔥🔥🔥Act1",cont1)
+       
+        cont1 = content.split("``")[1].replace("`", "```").replace("}", "}```")
+       
 
-        challenge_data = json.loads(f"'{cont1}'")
-        print("---challenge_data---", challenge_data)
+        challenge_data = json.loads(cont1)
+        
 
         required_fields = ["title", "options", "correct_answer_id", "explanation"]
         for field in required_fields:
@@ -72,5 +72,3 @@ def generate_questions_with_ai(difficulty: str) -> Dict[str, Any]:
             "explanation": "In Python, append() is the correct method to add an element to the end of a list."
         }
 
-a = generate_questions_with_ai("medium")
-print("🔥🔥🔥A", a)
