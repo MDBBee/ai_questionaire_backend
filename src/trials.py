@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.9)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.6)
 
 class S_outPut(BaseModel):
     title: str = Field(description="Title of the question")
@@ -17,7 +17,7 @@ class S_outPut(BaseModel):
     correct_answer_id: int = Field(description="Index of the correct answer/option, zero index base")
     explanation: str =Field(description="Detailed explanation of why the correct answer is right")
 
-def generate_questions_with_ai(difficulty: str) -> Dict[str, any]:      
+def generate_questions_with_ai(difficulty: str) -> S_outPut:      
     system_prompt = """You are an expert coding challenge creator. 
     Your task is to generate a coding question with multiple choice answers.
     The question should be appropriate for the specified difficulty level.
@@ -34,25 +34,31 @@ def generate_questions_with_ai(difficulty: str) -> Dict[str, any]:
         "explanation": "Detailed explanation of why the correct answer is right"
     }
 
-    Make sure the options are plausible but with only one clearly correct answer, the answers should be place at random indexes, try as much as possible to randomise the correct answer index{correct_answer_id}.
+    Make sure the options are plausible but with only one clearly correct answer.
     """
 
     llm_ws = llm.with_structured_output(S_outPut)
 
     try:
-        response = llm_ws.invoke( [{"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Generate a {difficulty} difficulty coding challenge."}])
+        response = llm_ws.astream_events( [{"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Generate a {difficulty} difficulty coding challenge."}], )
         
+       
 
-        question = {
+        # required_fields = ["title", "options", "correct_answer_id", "explanation"]
+        # for field in required_fields:
+        #     if field not in challenge_data:
+        #         raise ValueError(f"Missing required field: {field}")
+        ans = {
             "title": response.title,
             "options": response.options,
              "correct_answer_id": response.correct_answer_id,
              "explanation": response.explanation
         }
         
-       
-        return question
+      
+        print("ans")
+        return ans
 
     except Exception as e:
         print(e)
@@ -68,4 +74,6 @@ def generate_questions_with_ai(difficulty: str) -> Dict[str, any]:
             "explanation": "In Python, append() is the correct method to add an element to the end of a list."
         }
 
-# generate_questions_with_ai("medium")
+
+# abs =  generate_questions_with_ai("medium")
+# print("" == undefined)
