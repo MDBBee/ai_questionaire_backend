@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.9)
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 class FrontEndRequest(BaseModel):
     difficulty: str
@@ -30,7 +30,6 @@ class QuestionOutput(BaseModel):
     questions: List[QuestionModel] = Field(description="List of coding questions")
 
 def generate_questions_with_ai(request: FrontEndRequest) -> Dict[str, any]:
-    print("AI-GENERator🤖🤖🤖🤖🤖", request)      
     system_prompt = f"""You are an expert coding challenge creator for python, typsescript and javascript programming languages. 
     Your task is to generate 15 different coding questions with multiple choice answers.
     The questions should be appropriate for the specified difficulty level. Consider the programming language and Difficulty level stated below.

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
 from ..ai_generator import generate_questions_with_ai
 from ..database.db import (
     get_challenge_quota,
@@ -29,6 +28,7 @@ class ChallengeRequest(BaseModel):
 @router.post("/generate-challenge")
 async def generate_challenge(request: ChallengeRequest, request_obj: Request, db: Session = Depends(get_db)):
     print("REQUEST FROM GC✅",request)
+    print("REQUEST OBJECT✅",request)
     if request.difficulty is None:
         return
     try:
@@ -61,8 +61,8 @@ async def generate_challenge(request: ChallengeRequest, request_obj: Request, db
                 correct_answer_id=question["correct_answer_id"],
                 explanation=question["explanation"]
             )
-            db.commit()
             quota.quota_remaining -= 1
+            db.commit()
             # Creating a question object for F_end
             front_end_question = {
                 "id": new_challenge.id,
