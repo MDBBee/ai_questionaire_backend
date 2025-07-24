@@ -31,7 +31,7 @@ class QuestionOutput(BaseModel):
 
 def generate_questions_with_ai(request: FrontEndRequest) -> Dict[str, any]:
     system_prompt = f"""You are an expert coding challenge creator for python, typsescript and javascript programming languages. 
-    Your task is to generate 15 different coding questions with multiple choice answers.
+    Your task is to generate 2 different coding questions with multiple choice answers.
     The questions should be appropriate for the specified difficulty level. Consider the programming language and Difficulty level stated below.
 
     Difficulty Level: {request.difficulty}
