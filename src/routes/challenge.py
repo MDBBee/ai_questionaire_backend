@@ -1,8 +1,5 @@
-import json
-from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Request, status
-from pydantic import BaseModel, Field
-from ..ai_generator import QuestionModel, generate_questions_with_ai
+from ..agents.ai_generator import generate_questions
 from ..database.db import (
     get_challenge_quota,
     create_challenge_quota,
@@ -10,37 +7,17 @@ from ..database.db import (
     get_user_challenges
 )
 from .auth import  active_user_dependnecy
-from ..database.models import db_dependency
+from ..database.models import User, db_dependency
 from ..database.models import Challenge
+from .route_schemas import ChallengeRequest, QuestionsToFrontEndOutput, QuestionToFrontEndModel, SaveQuestionsToHistory
 from datetime import datetime
-import uuid
+import json
+
 
 router = APIRouter()
 
 
-class ChallengeRequest(BaseModel):
-    difficulty: str
-    programmingLanguage: str
 
-    class Config:
-        json_schema_extra = {"example": {"difficulty": "easy",  "programmingLanguage": "python"}}
-        
-class SaveQuestionsToHistory(BaseModel):
-    correct_answer_id: int
-    createdBy: str
-    difficulty: str
-    explanation: str
-    options: List[str]
-    title: str
-    programmingLanguage: str
-    userAnswer: Optional[int]
-    question_id: str
-
-class QuestionToFrontEndModel(QuestionModel):
-    question_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-
-class QuestionsToFrontEndOutput(BaseModel):
-    questions: List[QuestionToFrontEndModel]
 
 @router.post("/generate-challenge")
 async def generate_challenge(questSettings: ChallengeRequest, active_user: active_user_dependnecy, db: db_dependency ):
@@ -50,7 +27,7 @@ async def generate_challenge(questSettings: ChallengeRequest, active_user: activ
     try:
         user_id = active_user.id
         quota = get_challenge_quota(db, user_id)
-        if not quota:
+        if not quota: 
             quota = create_challenge_quota(db, user_id)
 
         quota = reset_quota_if_needed(db, quota)
@@ -60,8 +37,8 @@ async def generate_challenge(questSettings: ChallengeRequest, active_user: activ
         
          
 
-        challenge_data = generate_questions_with_ai(questSettings)
-        
+        challenge_data = generate_questions(questSettings, db)
+             
         generated_questions = []
         for q_data in challenge_data:
             parsed_question = QuestionToFrontEndModel(**q_data)  # Validates & converts
@@ -86,9 +63,12 @@ async def my_history(questSettings: Request, db: db_dependency):
 @router.post("/save_to_history")
 async def save_challenges_to_history(db: db_dependency, data_to_be_saved: list[SaveQuestionsToHistory], active_user: active_user_dependnecy):
 
+    print("✅✅✅🗝️🗝️🗝️USER:", active_user.model_dump())
+    user_id = active_user.id
+    user = db.query(User).filter_by(id = user_id).first()
     challenges_to_save = []
     for challenge in data_to_be_saved:
-        new_challenge =Challenge(difficulty=challenge.difficulty, programming_language=challenge.programmingLanguage, created_by=active_user.email, title=challenge.title, options=json.dumps(challenge.options), correct_answer_id=challenge.correct_answer_id, user_answer=challenge.userAnswer, explanation=challenge.explanation, question_id=challenge.question_id)
+        new_challenge =Challenge(difficulty=challenge.difficulty, programming_language=challenge.programmingLanguage, user=user, title=challenge.title, options=json.dumps(challenge.options), correct_answer_id=challenge.correct_answer_id, user_answer=challenge.userAnswer, explanation=challenge.explanation, question_id=challenge.question_id)
 
         challenges_to_save.append(new_challenge)
 

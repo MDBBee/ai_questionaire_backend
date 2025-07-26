@@ -102,7 +102,7 @@ async def researcher(message:str, request_obj: Request, db: db_dependency, user_
         # print("🐳🐳🐳🐳1:", quota.user_id)
 
         if not quota:
-            quota = create_challenge_quota(db, user_id)
+            quota = create_challenge_quota(db, user_details)
         quota = reset_quota_if_needed(db, quota)
         # print("🐳🐳🐳🐳2:", quota.quota_remaining)
 

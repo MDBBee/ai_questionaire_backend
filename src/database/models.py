@@ -4,8 +4,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
 from datetime import datetime, timezone
 from typing import Annotated
+from dotenv import load_dotenv
+import os
 
-engine = create_engine('sqlite:///dbase.db', echo=True)
+load_dotenv()
+db_url = os.getenv("DATABASE_URL")
+
+if db_url is None:
+    print("No db url found")
+
+    
+engine = create_engine(db_url, echo=False)
 Base = declarative_base()
 
 
@@ -31,8 +40,7 @@ class Challenge(Base):
     id = Column(Integer, primary_key=True)
     difficulty = Column(String, nullable=False)
     programming_language = Column(String, nullable=False)
-    date_created = Column(DateTime, default=datetime.now(timezone.utc))
-    created_by = Column(String, nullable=False, index=True)
+    date_created = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     title = Column(String, nullable=False)
     options = Column(String, nullable=False)
     correct_answer_id = Column(Integer, nullable=False)
@@ -67,6 +75,3 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session, Depends(get_db)]
-# date_created = Column(DateTime, default=datetime.now(timezone.utc))  # ❌
-# This sets the default once at startup, not per row insert. It will give every row the same timestamp, which is a subtle bug.
-# default=lambda: datetime.now(timezone.utc)
