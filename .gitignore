@@ -1,3 +1,11 @@
 .env
 .venv
 src/.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Alembic cache or temporary files (if any)
+*.db
+*.log

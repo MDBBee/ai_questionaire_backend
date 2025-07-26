@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, create_engine, ForeignKey
+from sqlalchemy import Boolean, Column, Enum as SqlEnum, Integer, String, DateTime, create_engine, ForeignKey
 from fastapi import Depends
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Annotated
 from dotenv import load_dotenv
 import os
+from enum import Enum
 
 load_dotenv()
 db_url = os.getenv("DATABASE_URL")
@@ -17,7 +18,11 @@ if db_url is None:
 engine = create_engine(db_url, echo=False)
 Base = declarative_base()
 
-
+class UserRole(Enum):
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
+    
 class User(Base):
     __tablename__ = "users"
 
@@ -28,8 +33,7 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     provider = Column(String,)
     image = Column(String, nullable=True)
-    role = Column(String)
-
+    role = Column(SqlEnum(UserRole, name="userrole"), default=UserRole.USER, nullable=False )
     challenges = relationship("Challenge", back_populates="user", cascade="all, delete-orphan")
     challenge_quotas = relationship("ChallengeQuota", back_populates="user", cascade="all, delete-orphan")
      
