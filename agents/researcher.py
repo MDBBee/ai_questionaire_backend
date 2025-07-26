@@ -1,7 +1,5 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_groq import ChatGroq
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import add_messages, StateGraph, END
 from langchain_core.messages import ToolMessage,SystemMessage
