@@ -25,9 +25,9 @@ ALGORITHM=os.getenv("AUTH_ALGORITHM")
 EXPIRATION=100
 
 class UserRole(str, Enum):
-    admin = "admin"
-    user = "user"
-    guest = "guest"
+    ADMIN = "admin"
+    USER = "user"
+    GUEST = "guest"
 
 class Provider(str, Enum):
     credential = "credential"
@@ -121,7 +121,7 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
     if user_exists:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
-    new_user = User(email=email, hashed_password=hashed_password, role=UserRole.user)
+    new_user = User(email=email, hashed_password=hashed_password, role=UserRole.USER)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -223,7 +223,7 @@ async def google_callback(request: Request, db: db_dependency):
     user = get_user_from_db(db, email=email)
 
     if not user:
-        user = User(email=email, provider=Provider.google, role=UserRole.user, image=image)
+        user = User(email=email, provider=Provider.google, role=UserRole.USER, image=image)
         db.add(user)
         db.commit()
         db.refresh(user)    
