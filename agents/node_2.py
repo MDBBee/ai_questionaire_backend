@@ -41,19 +41,23 @@ def uniqueness_validator(state: State):
         1) unique_questions: **only the unique questions, add complete question, including the options and all other attributes of the question object from CODING QUESTION that are found to be unique**
         2) duplicate_questions: **duplicate question or questions, extract only the question title from the  CODING QUESTIONs that are found to be duplicates** .
 
-        Note: If "EXISTING QUESTIONS" is an empty list, ignore the comparism, by returning all "CODING QUESTION" as new.
+        Note: If "EXISTING QUESTIONS" is an empty list, ignore the comparism, by returning all "CODING QUESTION" as new/unique.
     """
     
     llm_unique = llm.with_structured_output(UniqueModel)
 
     response = llm_unique.invoke([SystemMessage(content=system_prompt), HumanMessage(content="check for duplicate questions, respond with the provided structure.")])
     
-    state["existing_questions"] = state["existing_questions"] + [q.title for q in response.duplicate_questions]
+    if(len(response.duplicate_questions) > 0 ):
+        state["existing_questions"] = state["existing_questions"] + [q.title for q in response.duplicate_questions]
+
     state["accepted_questions"] = state["accepted_questions"] + response.unique_questions
 
+    state["number_of_retries"] += 1
     return state
 
 def router(state: State):
+    
     if len(state['duplicate_questions']) > 0 or len(state["accepted_questions"]) != 10:
         return "generate_questions"
     return "end"

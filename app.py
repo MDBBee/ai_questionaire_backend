@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-
+  
 app.include_router(challenge.router, prefix="/api")
 app.include_router(multi_agents.router, prefix="/agent")
 app.include_router(auth.router)

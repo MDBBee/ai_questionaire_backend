@@ -20,3 +20,5 @@ class State(TypedDict):
     existing_questions: List[str]
     accepted_questions: List[QuestionModel]
     duplicate_questions: List[QuestionModel]
+    number_of_retries: int
+    error: str

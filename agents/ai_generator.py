@@ -34,6 +34,7 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session):
 
     programmingLanguage = questionSetting.programmingLanguage
     difficulty = questionSetting.difficulty
+
     existing_question_titles = [q.title for q in db.query(Challenge).filter(Challenge.difficulty == questionSetting.difficulty, Challenge.programming_language == questionSetting.programmingLanguage)]
 
     print("🐳🐳🐳🐳:::LOQ",len(existing_question_titles))
@@ -46,12 +47,20 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session):
         "programmingLanguage": programmingLanguage,
         "duplicate_questions": [],
         "existing_questions": existing_question_titles,
-        "accepted_questions": []
+        "accepted_questions": [],
+        "number_of_retries": 0,
+        "error": ""
         }
 
     try:
         response = graph.invoke(input=entry_config)
+        print(response["error"])
+        print(response["accepted_questions"])
+        if len(response["accepted_questions"]) == 0 and response["error"] != "":
 
+            raise RuntimeError(response["error"])
+        
+        
         questions = []
         for t in response["accepted_questions"]:
             question = {
