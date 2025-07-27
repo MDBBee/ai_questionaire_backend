@@ -61,7 +61,7 @@ class GetUser(BaseModel):
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # OAuth2PasswordBearer will not retrieve the token from a cookie — it only looks for the token in the Authorization header by default.
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
-
+is_prod = os.getenv("ENV") == "production"
 
 def get_user_from_db(db: Session, email: str):
     return db.query(User).filter( User.email == email).first()
@@ -140,9 +140,9 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
     response.set_cookie(
         key="access_token",
         value=token,
-        secure=False,
+        secure=is_prod,
         httponly=True,
-        samesite="lax",
+        samesite="none" if is_prod else "lax",
         max_age= 3600 * 100
     )
     return response
@@ -155,8 +155,8 @@ async def logout():
         key="access_token",
         path="/",
         httponly=True,
-        secure=False,
-        samesite="lax"
+        secure=is_prod,
+        samesite="none" if is_prod else "lax",
         )
     return response
 
@@ -181,9 +181,9 @@ async def login(login_data: LoginUser, db: db_dependency ):
     response.set_cookie(
         key="access_token",
         value=token,
-        secure=False,
+        secure=is_prod,
         httponly=True,
-        samesite="lax",
+        samesite="none" if is_prod else "lax",
         max_age=3600 * 100
     )
     return response
@@ -238,8 +238,8 @@ async def google_callback(request: Request, db: db_dependency):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False,  # set to True in production with HTTPS
-        samesite="Lax",  # or "Strict"
+        secure=is_prod,  # set to True in production with HTTPS
+        samesite="none" if is_prod else "lax",  # or "Strict"
         max_age=3600 * 100
     )
     return response

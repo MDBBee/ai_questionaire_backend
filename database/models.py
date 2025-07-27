@@ -30,8 +30,9 @@ class User(Base):
     provider = Column(String,)
     image = Column(String, nullable=True)
     role = Column(String, default="user", nullable=False )
-    challenges = relationship("Challenge", back_populates="user", cascade="all, delete-orphan")
-    challenge_quotas = relationship("ChallengeQuota", back_populates="user", cascade="all, delete-orphan")
+
+    challenges = relationship("Challenge", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    challenge_quotas = relationship("ChallengeQuota", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
      
 
 class Challenge(Base):
@@ -48,7 +49,7 @@ class Challenge(Base):
     explanation = Column(String, nullable=False)
     question_id = Column(String, unique=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     user = relationship("User", back_populates="challenges")
 
 
@@ -59,7 +60,7 @@ class ChallengeQuota(Base):
     quota_remaining = Column(Integer, nullable=False, default=50)
     last_reset_date = Column(DateTime, default=datetime.now(timezone.utc))
 
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     user = relationship("User", back_populates="challenge_quotas")
 
 
