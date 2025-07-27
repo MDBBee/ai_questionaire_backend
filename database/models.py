@@ -18,10 +18,6 @@ if db_url is None:
 engine = create_engine(db_url, echo=False)
 Base = declarative_base()
 
-class UserRole(Enum):
-    ADMIN = "admin"
-    USER = "user"
-    GUEST = "guest"
     
 class User(Base):
     __tablename__ = "users"
@@ -33,7 +29,7 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     provider = Column(String,)
     image = Column(String, nullable=True)
-    role = Column(SqlEnum(UserRole, name="userrole"), default=UserRole.USER, nullable=False )
+    role = Column(String, default="user", nullable=False )
     challenges = relationship("Challenge", back_populates="user", cascade="all, delete-orphan")
     challenge_quotas = relationship("ChallengeQuota", back_populates="user", cascade="all, delete-orphan")
      
