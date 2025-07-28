@@ -30,12 +30,12 @@ builder.add_conditional_edges("uniqueness_validator",router, {"generate_question
 
 graph = builder.compile()
 
-def generate_questions(questionSetting: ChallengeRequest, db: Session):
+def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: int):
 
     programmingLanguage = questionSetting.programmingLanguage
     difficulty = questionSetting.difficulty
 
-    existing_question_titles = [q.title for q in db.query(Challenge).filter(Challenge.difficulty == questionSetting.difficulty, Challenge.programming_language == questionSetting.programmingLanguage)]
+    existing_question_titles = [q.title for q in db.query(Challenge).filter(Challenge.user_id == user_id, Challenge.difficulty == questionSetting.difficulty, Challenge.programming_language == questionSetting.programmingLanguage)]
 
     print("🐳🐳🐳🐳:::LOQ",len(existing_question_titles))
 
@@ -54,10 +54,9 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session):
 
     try:
         response = graph.invoke(input=entry_config)
-        print(response["error"])
-        print(response["accepted_questions"])
+        print("😞😞😞ERROR RESONSE",response["error"])
+        print("😎😎ACCEPTED QUESTIONS",response["accepted_questions"])
         if len(response["accepted_questions"]) == 0 and response["error"] != "":
-
             raise RuntimeError(response["error"])
         
         

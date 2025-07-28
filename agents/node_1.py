@@ -15,8 +15,9 @@ def generate_questions_with_ai(state: State) -> State:
 
     try:
         if state["number_of_retries"] > 4:
+            print("✅✅✅🔐🔐🗝️🗝️🐳🐳RETRIES REACHED", "MAX RETRIES REACHED")
             return Command(
-            goto=END,
+            goto="router",
             update={
                 "error": "Exceeded maximum retries(4)",
                 "accepted_questions": []  

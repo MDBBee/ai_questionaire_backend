@@ -37,7 +37,7 @@ async def generate_challenge(questSettings: ChallengeRequest, active_user: activ
         
          
 
-        challenge_data = generate_questions(questSettings, db)
+        challenge_data = generate_questions(questSettings, db, user_id)
              
         generated_questions = []
         for q_data in challenge_data:
