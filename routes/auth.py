@@ -247,7 +247,7 @@ async def google_callback(request: Request, db: db_dependency):
     # Extract 'next' query param or fallback to "/"
     # next_url = request.query_params.get("next", "/")  
     # Set the JWT as a secure HTTP-only cookie
-    response = RedirectResponse(url="https://bagent.onrender.com/agentQ", status_code=302)
+    response = RedirectResponse(url="https://bagent.netlify.app/agentQ", status_code=302)
     response.set_cookie(
         key="access_token",
         value=token,
