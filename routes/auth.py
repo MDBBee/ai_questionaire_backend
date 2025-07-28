@@ -195,7 +195,7 @@ async def login(login_data: LoginUser, db: db_dependency ):
             secure=is_prod,
             httponly=True,
             samesite="none" if is_prod else "lax",
-            max_age=3600 * 100
+            max_age=3600 * 24
         )
         return response
     
@@ -247,14 +247,14 @@ async def google_callback(request: Request, db: db_dependency):
     # Extract 'next' query param or fallback to "/"
     # next_url = request.query_params.get("next", "/")  
     # Set the JWT as a secure HTTP-only cookie
-    response = RedirectResponse(url="http://localhost:5173/agentQ", status_code=302)
+    response = RedirectResponse(url="https://bagent.onrender.com/agentQ", status_code=302)
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
         secure=is_prod,  # set to True in production with HTTPS
         samesite="none" if is_prod else "lax",  # or "Strict"
-        max_age=3600 * 100
+        max_age=3600 * 24
     )
     return response
 

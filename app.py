@@ -9,6 +9,12 @@ load_dotenv()
 
 app = FastAPI()
 
+# ✅ Health check endpoint
+@app.get("/health", tags=["Health"])
+async def health_check():
+    return {"status": "ok"}
+
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SESSION_SECRET_KEY")
