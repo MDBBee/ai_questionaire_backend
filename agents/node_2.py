@@ -20,6 +20,11 @@ class UniqueModel(BaseModel):
 
 def uniqueness_validator(state: State):
 
+    if state["number_of_retries"] > 4:
+        print("✅✅✅🔐🔐🗝️🗝️🐳🐳RETRIES REACHED", "MAX RETRIES REACHED")
+
+        return state
+    
     title_of_existing_questions= state["existing_questions"]
 
     system_prompt = f"""
@@ -53,11 +58,17 @@ def uniqueness_validator(state: State):
 
     state["accepted_questions"] = state["accepted_questions"] + response.unique_questions
 
-    state["number_of_retries"] += 1
+    state["number_of_retries"] = state["number_of_retries"] + 1
+
     return state
 
 def router(state: State):
     
+    if state["number_of_retries"] >= 4:
+        print("✅✅✅🔐🔐🗝️🗝️🐳🐳RETRIES REACHED", "MAX RETRIES REACHED")
+        return "end"
     if len(state['duplicate_questions']) > 0 or len(state["accepted_questions"]) != 10:
         return "generate_questions"
     return "end"
+    # if len(state['duplicate_questions']) > 0 or len(state["accepted_questions"]) != 10:
+    #     return "generate_questions"

@@ -14,15 +14,11 @@ def generate_questions_with_ai(state: State) -> State:
     NO_QUESTIONS_TO_GENERATE = 10
 
     try:
-        if state["number_of_retries"] > 4:
+        if state["number_of_retries"] >= 4:
             print("✅✅✅🔐🔐🗝️🗝️🐳🐳RETRIES REACHED", "MAX RETRIES REACHED")
-            return Command(
-            goto="router",
-            update={
-                "error": "Exceeded maximum retries(4)",
-                "accepted_questions": []  
-                                }
-                            )
+            state["error"] = "Exceeded maximum retries(4)"
+            state["accepted_questions"] = []
+            return state
         
         
         if len(state["duplicate_questions"]) > 0:
@@ -71,6 +67,7 @@ def generate_questions_with_ai(state: State) -> State:
         response = llm_ws.invoke([SystemMessage(content=system_prompt) ] + state["messages"])
         
         state["generated_questions"] = response.questions
+        # Reset duplicate questions
         state["duplicate_questions"] = []
 
         return state

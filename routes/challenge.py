@@ -63,7 +63,7 @@ async def my_history(questSettings: Request, db: db_dependency):
 @router.post("/save_to_history")
 async def save_challenges_to_history(db: db_dependency, data_to_be_saved: list[SaveQuestionsToHistory], active_user: active_user_dependnecy):
 
-    print("✅✅✅🗝️🗝️🗝️USER:", active_user.model_dump())
+  
     user_id = active_user.id
     user = db.query(User).filter_by(id = user_id).first()
     challenges_to_save = []

@@ -15,7 +15,8 @@ if db_url is None:
     print("No db url found")
 
     
-engine = create_engine(db_url, echo=False)
+engine = create_engine(db_url, echo=False, pool_pre_ping=True, pool_recycle=3600  # optional: recycle after 1 hour
+)
 Base = declarative_base()
 
     

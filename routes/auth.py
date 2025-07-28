@@ -73,10 +73,10 @@ def authenticate_user(email, password, db: db_dependency):
     
   
     if not user_exists:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials, wrong password or email")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unregistered email, please create an account!")
     
     if not pwd_context.verify(password, user_exists.hashed_password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials, wrong password or email")
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials, probably inputed a wrong password or email")
     
     return user_exists
 
@@ -117,35 +117,41 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
     hashed_password = pwd_context.hash(create_user_request.password)
     email = create_user_request.email.lower()
 
-    user_exists = db.query(User).filter(User.email == email).first()
-    if user_exists:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    try:
+        user_exists = db.query(User).filter(User.email == email).first()
+        if user_exists:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered, please login!")
 
-    new_user = User(email=email, hashed_password=hashed_password, role=UserRole.USER)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
+        new_user = User(email=email, hashed_password=hashed_password, role=UserRole.USER)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
 
-    new_user = GetUser(id=new_user.id, email=new_user.email, disabled=new_user.disabled, role=new_user.role)
+        new_user = GetUser(id=new_user.id, email=new_user.email, disabled=new_user.disabled, role=new_user.role)
 
-    user = authenticate_user(email=new_user.email.lower(), password=create_user_request.password, db=db)
+        user = authenticate_user(email=new_user.email.lower(), password=create_user_request.password, db=db)
 
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
 
-    token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION)) 
+        token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION)) 
 
-  
-    response = JSONResponse(status_code=status.HTTP_201_CREATED, content={**new_user.model_dump()})
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        secure=is_prod,
-        httponly=True,
-        samesite="none" if is_prod else "lax",
-        max_age= 3600 * 100
-    )
-    return response
+    
+        response = JSONResponse(status_code=status.HTTP_201_CREATED, content={**new_user.model_dump()})
+        print("😎😎USER", new_user.model_dump())
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            secure=is_prod,
+            httponly=True,
+            samesite="none" if is_prod else "lax",
+            max_age= 3600 * 24 
+        )
+        return response
+    except HTTPException as e:
+        # Re-raise custom HTTP exceptions
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": True, "message": e.detail})
+
 
 @router.post("/logout")
 async def logout():
@@ -163,30 +169,38 @@ async def logout():
 @router.post("/token", response_model=Token)
 async def login(login_data: LoginUser, db: db_dependency ):
 
- 
-    user = authenticate_user(email=login_data.email.lower(), password=login_data.password, db=db)
+    try:
+        user_email_in_db = db.query(User).filter(User.email == login_data.email).first()
+      
 
+        user = authenticate_user(email=login_data.email.lower(), password=login_data.password, db=db)
 
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
+        
+        if not user_email_in_db:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect Email or Password")
 
-    token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION))  
-   
-    response = JSONResponse(status_code=status.HTTP_200_OK, content={       "username":user.username,
-            "email": user.email,
-            "image": user.image,
-            "role": user.role,
-            "disabled": user.disabled,})
+        token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION))  
     
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        secure=is_prod,
-        httponly=True,
-        samesite="none" if is_prod else "lax",
-        max_age=3600 * 100
-    )
-    return response
+        response = JSONResponse(status_code=status.HTTP_200_OK, content={       "username":user.username,
+                "email": user.email,
+                "image": user.image,
+                "role": user.role,
+                "disabled": user.disabled,})
+        
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            secure=is_prod,
+            httponly=True,
+            samesite="none" if is_prod else "lax",
+            max_age=3600 * 100
+        )
+        return response
+    
+    except HTTPException as e:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"Error": True, "message": e.detail})
 
 @router.get("/user")
 async def get_users(current_user: active_user_dependnecy):
