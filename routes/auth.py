@@ -170,7 +170,7 @@ async def logout():
 async def login(login_data: LoginUser, db: db_dependency ):
 
     try:
-        user_email_in_db = db.query(User).filter(User.email == login_data.email).first()
+        user_email_in_db = db.query(User).filter(User.email == login_data.email.lower()).first()
       
 
         user = authenticate_user(email=login_data.email.lower(), password=login_data.password, db=db)
