@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, conlist
 from typing import TypedDict, Annotated, List
 from langchain_core.messages import AnyMessage, HumanMessage
 from langgraph.graph import add_messages, StateGraph, END
@@ -10,7 +10,7 @@ class QuestionModel(BaseModel):
     explanation: str =Field(description="Detailed explanation of the reason behind the answer")
 
 class QuestionOutput(BaseModel):
-    questions: List[QuestionModel] = Field(description="List of coding questions")
+    questions: conlist(QuestionModel,min_length=5, max_length=12) = Field(description="List of coding questions")
     
 class State(TypedDict):
     messages: Annotated[List[AnyMessage], add_messages]
@@ -21,4 +21,5 @@ class State(TypedDict):
     accepted_questions: List[QuestionModel]
     duplicate_questions: List[QuestionModel]
     number_of_retries: int
+    number_of_questions_to_generate: int
     error: str

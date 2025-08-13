@@ -129,11 +129,6 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
 
         new_user = GetUser(id=new_user.id, email=new_user.email, disabled=new_user.disabled, role=new_user.role)
 
-        # user = authenticate_user(email=new_user.email.lower(), password=create_user_request.password, db=db)
-
-        # if not user:
-        #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
-
         token = create_access_token(new_user.email, new_user.id, timedelta(minutes=EXPIRATION)) 
 
     
@@ -169,9 +164,7 @@ async def logout():
 @router.post("/token", response_model=Token)
 async def login(login_data: LoginUser, db: db_dependency ):
 
-    try:
-        # user_email_in_db = db.query(User).filter(User.email == login_data.email.lower()).first()
-      
+    try:      
 
         user = authenticate_user(email=login_data.email.lower(), password=login_data.password, db=db)
 
@@ -241,10 +234,6 @@ async def google_callback(request: Request, db: db_dependency):
 
     token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION))
 
-    # Extract 'next' query param or fallback to "/"
-    # next_url = request.query_params.get("next", "/")  
-    # Set the JWT as a secure HTTP-only cookie
-    # "https://bagent.netlify.app/agentQ"
     response = RedirectResponse(url="/agentQ", status_code=302)
     response.set_cookie(
         key="access_token",

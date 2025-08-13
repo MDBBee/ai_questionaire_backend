@@ -37,12 +37,12 @@ app.include_router(auth.router)
 
 
 # ✅ Mount static files
-# app.mount("/assets", StaticFiles(directory="frontend-main/dist/assets"), name="assets")
+app.mount("/assets", StaticFiles(directory="frontend-main/dist/assets"), name="assets")
 
 # ✅ Catch-all route for SPA (e.g., React Router or Vue Router)
-# @app.get("/{full_path:path}")
-# async def serve_spa(full_path: str):
-#     return FileResponse("frontend-main/dist/index.html")
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    return FileResponse("frontend-main/dist/index.html")
 
 
 

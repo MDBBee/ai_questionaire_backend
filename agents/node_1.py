@@ -1,31 +1,33 @@
 from langchain_core.messages import SystemMessage
-from ..agents.agent_schemas import QuestionOutput, State
 from langchain_google_genai import ChatGoogleGenerativeAI
+
 from langgraph.types import Command
 from langgraph.graph import END
 from dotenv import load_dotenv
 import os
+from ..agents.agent_schemas import QuestionOutput, State
 
 
 load_dotenv()
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
+
 
 def generate_questions_with_ai(state: State) -> State:
-    NO_QUESTIONS_TO_GENERATE = 10
-    print("NODE-1State", state)
+    NO_OF_QUESTIONS_TO_GENERATE = state["number_of_questions_to_generate"]
+    print("NODE-1State")
     try:
         if state["number_of_retries"] >= 4:
             state["error"] = "Maximum retries exceeded!"
             return state
         
-        print("IN-NODE1---DID NOT BREAKOUT")
+   
         if len(state["duplicate_questions"]) > 0:
-            NO_QUESTIONS_TO_GENERATE = len(state["duplicate_questions"])
-
-            
+            NO_OF_QUESTIONS_TO_GENERATE = len(state["duplicate_questions"])
+          
+         
         system_prompt = f"""
             You are an expert coding challenge creator for Python, TypeScript, and JavaScript. 
-            Your task is to generate {NO_QUESTIONS_TO_GENERATE} high-quality coding questions, each with 4 multiple-choice answers and exactly one correct answer.
+            Your task is to generate {NO_OF_QUESTIONS_TO_GENERATE} high-quality coding questions, each with 4 multiple-choice answers and exactly one correct answer.
 
             Each question must match the following constraints:
             - Programming Language: {state['programmingLanguage']}
@@ -33,8 +35,10 @@ def generate_questions_with_ai(state: State) -> State:
 
             ### Difficulty Guidelines:
             - **Easy**: Basic syntax, variables, simple loops, conditional logic, string manipulation.
-            - **Medium**: Functions, data structures (lists, dictionaries), iteration patterns, basic algorithms.
-            - **Hard**: Recursion, time/space optimization, complex logic, advanced language features, object-oriented patterns.
+
+            - **Medium**: For questions with difficulty level: Medium, completeness is the PRIORITY, don't generate incomplete questions(for example:- "Unraveling Asynchronous Execution: What's the final output of this JavaScript code snippet?", this question is incomplete without the "JavaScript code snippet"!!..). Focus on Functions, data structures (lists, dictionaries), iteration patterns, basic algorithms.
+
+            - **Hard**: For questions with difficulty level: HARD, completeness is the PRIORITY, don't generate incomplete questions(for example:- "Unraveling Asynchronous Execution: What's the final output of this JavaScript code snippet?", this question is incomplete without the "JavaScript code snippet"!!..). Generate questions on Recursion, time/space optimization, complex logic, advanced language features, object-oriented patterns.Remember to NOT Generate incomplete questions. 
 
             ### Requirements:
             1. Each generated question should have a different title, avoid using the same starting phrase (e.g, what is the output of the code....). The questions/title shouldn't be boring, apply wit and logic to each generated question.
@@ -42,9 +46,9 @@ def generate_questions_with_ai(state: State) -> State:
             3. Ensure conceptual diversity:
             - Cover a variety of topics like booleans, arithmetic, string ops, indexing, control flow, functions, error handling, and common algorithms.
             4. Keep the question titles clear, concise, and semantically distinct from one another.
-            5. Do NOT reuse existing question titles. These must be unique:
-            Existing question titles: {state["existing_questions"]}
-            6. Ensure that the question title is complete and logical. Do not generate, incomplete questions
+          
+           
+            5. Ensure that the question title is complete and logical. Do not generate, incomplete questions
 
             ### Output Format:
             For each question, return:
@@ -58,18 +62,17 @@ def generate_questions_with_ai(state: State) -> State:
             Do NOT generate, INCOMPLETE questions
 
             """
-
-
-        llm_ws = llm.with_structured_output(QuestionOutput)
-
-        response = llm_ws.invoke([SystemMessage(content=system_prompt) ] + state["messages"])
         
+       
+        llm_ws = llm.with_structured_output(QuestionOutput)
+        
+        response = llm_ws.invoke([SystemMessage(content=system_prompt) ] + state["messages"])
+     
         state["generated_questions"] = response.questions
-        # Reset duplicate questions
+
         state["duplicate_questions"] = []
 
         return state
-    except RuntimeError as e:
+    except Exception as e:
         print(str(e))
-
 

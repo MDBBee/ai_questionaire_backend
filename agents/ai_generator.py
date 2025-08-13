@@ -34,13 +34,19 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
 
     programmingLanguage = questionSetting.programmingLanguage
     difficulty = questionSetting.difficulty
+    NO_QUESTIONS_TO_GENERATE = 10
+
+    if(questionSetting.difficulty == "hard"):
+        NO_QUESTIONS_TO_GENERATE = 5
+
 
     existing_question_titles = [q.title for q in db.query(Challenge).filter(Challenge.user_id == user_id, Challenge.difficulty == questionSetting.difficulty, Challenge.programming_language == questionSetting.programmingLanguage)]
 
     print("🐳🐳🐳🐳:::LOQ",len(existing_question_titles))
     # return
-    human_message=f"Please Generate 10(ten) coding challenges/questions in {programmingLanguage} programming language. The difficulty level should be {difficulty}"
+    human_message=f"Please Generate {NO_QUESTIONS_TO_GENERATE} coding challenges/questions in {programmingLanguage} programming language. The difficulty level should be {difficulty}"
     
+   
     entry_config = {
         "messages": [HumanMessage(content=human_message)],
         "difficulty": difficulty,
@@ -49,14 +55,13 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
         "existing_questions": existing_question_titles,
         "accepted_questions": [],
         "number_of_retries": 0,
+        "number_of_questions_to_generate": NO_QUESTIONS_TO_GENERATE,
         "error": ""
         }
 
     try:
         response = graph.invoke(input=entry_config)
-        print("🐳🐳😎😎RESPONSE.DUP", response["duplicate_questions"])
-        print("🐳🐳😎😎RESPONSE.NOR", response["number_of_retries"])
-        print("🐳🐳😎😎RESPONSE.ERR", response["error"])
+
         if len(response["accepted_questions"]) == 0 and response["error"] != "":
             raise RuntimeError(response["error"])
         
@@ -77,17 +82,6 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
 
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=f"Something went wrong!: {str(e)}")
-        # return {
-        #     "title": "Basic Python List Operation",
-        #     "options": [
-        #         "my_list.append(5)",
-        #         "my_list.add(5)",
-        #         "my_list.push(5)",
-        #         "my_list.insert(5)",
-        #     ],
-        #     "correct_answer_id": 0,
-        #     "explanation": "In Python, append() is the correct method to add an element to the end of a list."
-        # }
 
 
 
