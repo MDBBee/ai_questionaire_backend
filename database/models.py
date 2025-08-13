@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Enum as SqlEnum, Integer, String, DateTime, create_engine, ForeignKey
+from sqlalchemy import Boolean, Column, Integer, String, DateTime, create_engine, ForeignKey
 from fastapi import Depends
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, Session
@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Annotated
 from dotenv import load_dotenv
 import os
-from enum import Enum
+
 
 load_dotenv()
 db_url = os.getenv("DATABASE_URL")

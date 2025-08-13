@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from starlette.middleware.sessions import SessionMiddleware
 from .routes import challenge, multi_agents, auth
 from dotenv import load_dotenv
@@ -32,9 +34,15 @@ app.add_middleware(
 app.include_router(challenge.router, prefix="/api")
 app.include_router(multi_agents.router, prefix="/agent")
 app.include_router(auth.router)
-# app.include_router(webhooks.router, prefix="/webhooks")
 
 
+# ✅ Mount static files
+# app.mount("/assets", StaticFiles(directory="frontend-main/dist/assets"), name="assets")
+
+# ✅ Catch-all route for SPA (e.g., React Router or Vue Router)
+# @app.get("/{full_path:path}")
+# async def serve_spa(full_path: str):
+#     return FileResponse("frontend-main/dist/index.html")
 
 
 

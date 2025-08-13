@@ -15,12 +15,10 @@ def generate_questions_with_ai(state: State) -> State:
 
     try:
         if state["number_of_retries"] >= 4:
-            print("✅✅✅🔐🔐🗝️🗝️🐳🐳RETRIES REACHED", "MAX RETRIES REACHED")
-            state["error"] = "Exceeded maximum retries(4)"
-            state["accepted_questions"] = []
+            state["error"] = "Maximum retries exceeded!"
             return state
         
-        
+        print("IN-NODE1---DID NOT BREAKOUT")
         if len(state["duplicate_questions"]) > 0:
             NO_QUESTIONS_TO_GENERATE = len(state["duplicate_questions"])
 

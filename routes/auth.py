@@ -76,7 +76,7 @@ def authenticate_user(email, password, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unregistered email, please create an account!")
     
     if not pwd_context.verify(password, user_exists.hashed_password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials, probably inputed a wrong password or email")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials, probably inputed a wrong password or email")
     
     return user_exists
 
@@ -112,16 +112,16 @@ def get_current_active_user(db: db_dependency, request: Request) -> GetUser:
 active_user_dependnecy = Annotated[GetUser, Depends(get_current_active_user)]
 
 
-@router.post("/", status_code=status.HTTP_200_OK)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency,  create_user_request: CreateUser):
-    hashed_password = pwd_context.hash(create_user_request.password)
-    email = create_user_request.email.lower()
 
     try:
+        email = create_user_request.email.lower()
         user_exists = db.query(User).filter(User.email == email).first()
         if user_exists:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered, please login!")
 
+        hashed_password = pwd_context.hash(create_user_request.password)
         new_user = User(email=email, hashed_password=hashed_password, role=UserRole.USER)
         db.add(new_user)
         db.commit()
@@ -129,16 +129,16 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
 
         new_user = GetUser(id=new_user.id, email=new_user.email, disabled=new_user.disabled, role=new_user.role)
 
-        user = authenticate_user(email=new_user.email.lower(), password=create_user_request.password, db=db)
+        # user = authenticate_user(email=new_user.email.lower(), password=create_user_request.password, db=db)
 
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
+        # if not user:
+        #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
 
-        token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION)) 
+        token = create_access_token(new_user.email, new_user.id, timedelta(minutes=EXPIRATION)) 
 
     
         response = JSONResponse(status_code=status.HTTP_201_CREATED, content={**new_user.model_dump()})
-        print("😎😎USER", new_user.model_dump())
+   
         response.set_cookie(
             key="access_token",
             value=token,
@@ -156,7 +156,7 @@ async def create_user(db: db_dependency,  create_user_request: CreateUser):
 @router.post("/logout")
 async def logout():
 
-    response = JSONResponse(content={"message":"Logout successful"}, status_code=status.HTTP_200_OK)
+    response = JSONResponse(content={"message":"Logout was successful"}, status_code=status.HTTP_200_OK)
     response.delete_cookie(
         key="access_token",
         path="/",
@@ -170,16 +170,13 @@ async def logout():
 async def login(login_data: LoginUser, db: db_dependency ):
 
     try:
-        user_email_in_db = db.query(User).filter(User.email == login_data.email.lower()).first()
+        # user_email_in_db = db.query(User).filter(User.email == login_data.email.lower()).first()
       
 
         user = authenticate_user(email=login_data.email.lower(), password=login_data.password, db=db)
 
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
-        
-        if not user_email_in_db:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect Email or Password")
 
         token = create_access_token(user.email, user.id, timedelta(minutes=EXPIRATION))  
     
@@ -247,7 +244,8 @@ async def google_callback(request: Request, db: db_dependency):
     # Extract 'next' query param or fallback to "/"
     # next_url = request.query_params.get("next", "/")  
     # Set the JWT as a secure HTTP-only cookie
-    response = RedirectResponse(url="https://bagent.netlify.app/agentQ", status_code=302)
+    # "https://bagent.netlify.app/agentQ"
+    response = RedirectResponse(url="/agentQ", status_code=302)
     response.set_cookie(
         key="access_token",
         value=token,

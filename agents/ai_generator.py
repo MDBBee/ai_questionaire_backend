@@ -3,7 +3,7 @@ from langgraph.graph import  StateGraph, END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
-
+from fastapi import HTTPException, status
 from ..agents.agent_schemas import State
 from ..agents.node_1 import generate_questions_with_ai
 from ..agents.node_2 import router, uniqueness_validator
@@ -38,7 +38,7 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
     existing_question_titles = [q.title for q in db.query(Challenge).filter(Challenge.user_id == user_id, Challenge.difficulty == questionSetting.difficulty, Challenge.programming_language == questionSetting.programmingLanguage)]
 
     print("🐳🐳🐳🐳:::LOQ",len(existing_question_titles))
-
+    # return
     human_message=f"Please Generate 10(ten) coding challenges/questions in {programmingLanguage} programming language. The difficulty level should be {difficulty}"
     
     entry_config = {
@@ -54,8 +54,9 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
 
     try:
         response = graph.invoke(input=entry_config)
-        print("😞😞😞ERROR RESONSE",response["error"])
-        print("😎😎ACCEPTED QUESTIONS",response["accepted_questions"])
+        print("🐳🐳😎😎RESPONSE.DUP", response["duplicate_questions"])
+        print("🐳🐳😎😎RESPONSE.NOR", response["number_of_retries"])
+        print("🐳🐳😎😎RESPONSE.ERR", response["error"])
         if len(response["accepted_questions"]) == 0 and response["error"] != "":
             raise RuntimeError(response["error"])
         
@@ -75,18 +76,18 @@ def generate_questions(questionSetting: ChallengeRequest, db: Session, user_id: 
     
 
     except Exception as e:
-        print(e)
-        return {
-            "title": "Basic Python List Operation",
-            "options": [
-                "my_list.append(5)",
-                "my_list.add(5)",
-                "my_list.push(5)",
-                "my_list.insert(5)",
-            ],
-            "correct_answer_id": 0,
-            "explanation": "In Python, append() is the correct method to add an element to the end of a list."
-        }
+        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=f"Something went wrong!: {str(e)}")
+        # return {
+        #     "title": "Basic Python List Operation",
+        #     "options": [
+        #         "my_list.append(5)",
+        #         "my_list.add(5)",
+        #         "my_list.push(5)",
+        #         "my_list.insert(5)",
+        #     ],
+        #     "correct_answer_id": 0,
+        #     "explanation": "In Python, append() is the correct method to add an element to the end of a list."
+        # }
 
 
 

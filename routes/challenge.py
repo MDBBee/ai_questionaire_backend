@@ -17,8 +17,6 @@ import json
 router = APIRouter()
 
 
-
-
 @router.post("/generate-challenge")
 async def generate_challenge(questSettings: ChallengeRequest, active_user: active_user_dependnecy, db: db_dependency ):
     
@@ -37,8 +35,9 @@ async def generate_challenge(questSettings: ChallengeRequest, active_user: activ
         
          
 
+       
         challenge_data = generate_questions(questSettings, db, user_id)
-             
+       
         generated_questions = []
         for q_data in challenge_data:
             parsed_question = QuestionToFrontEndModel(**q_data)  # Validates & converts
@@ -49,7 +48,7 @@ async def generate_challenge(questSettings: ChallengeRequest, active_user: activ
         return QuestionsToFrontEndOutput(questions=generated_questions)
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail=str(e))
 
 
 @router.get("/my_history")
