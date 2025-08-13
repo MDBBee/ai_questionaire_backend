@@ -12,7 +12,7 @@ llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 
 def generate_questions_with_ai(state: State) -> State:
     NO_QUESTIONS_TO_GENERATE = 10
-
+    print("NODE-1State", state)
     try:
         if state["number_of_retries"] >= 4:
             state["error"] = "Maximum retries exceeded!"
