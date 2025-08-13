@@ -3,7 +3,6 @@ from typing import List
 from pydantic import BaseModel, Field
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from ..agents.agent_schemas import QuestionModel, State
 
