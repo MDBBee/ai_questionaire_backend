@@ -115,3 +115,14 @@ async def researcher(message:str, request_obj: Request, db: db_dependency, user_
         return StreamingResponse(generate_chat_response(message, checkpoint_id), media_type="text/event-stream")
     except Exception as e:
         raise HTTPException(status_code=429, detail="Insufficient Quota")
+    
+
+
+    
+# https://bagent.onrender.com/agent/researcher?message=hello
+
+
+# https://bagent.onrender.com/agent/researcher?message=Thanks&checkpoint_id=8a0cab00-59b3-4f32-a948-92d4b08e59bc
+
+
+

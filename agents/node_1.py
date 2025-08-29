@@ -26,7 +26,7 @@ def generate_questions_with_ai(state: State) -> State:
           
          
         system_prompt = f"""
-            You are an expert coding challenge creator for Python, TypeScript, and JavaScript. 
+            You are an expert coding challenge creator for Python, TypeScript, and JavaScript.
             Your task is to generate {NO_OF_QUESTIONS_TO_GENERATE} high-quality coding questions, each with 4 multiple-choice answers and exactly one correct answer.
 
             Each question must match the following constraints:
@@ -36,31 +36,28 @@ def generate_questions_with_ai(state: State) -> State:
             ### Difficulty Guidelines:
             - **Easy**: Basic syntax, variables, simple loops, conditional logic, string manipulation.
 
-            - **Medium**: For questions with difficulty level: Medium, completeness is the PRIORITY, don't generate incomplete questions(for example:- "Unraveling Asynchronous Execution: What's the final output of this JavaScript code snippet?", this question is incomplete without the "JavaScript code snippet"!!..). Focus on Functions, data structures (lists, dictionaries), iteration patterns, basic algorithms.
+            - **Medium**: For questions with difficulty level: Medium, focus on Functions, data structures, iteration patterns, mid-level algorithms.
 
-            - **Hard**: For questions with difficulty level: HARD, completeness is the PRIORITY, don't generate incomplete questions(for example:- "Unraveling Asynchronous Execution: What's the final output of this JavaScript code snippet?", this question is incomplete without the "JavaScript code snippet"!!..). Generate questions on Recursion, time/space optimization, complex logic, advanced language features, object-oriented patterns.Remember to NOT Generate incomplete questions. 
+            - **Hard**: For questions with difficulty level: HARD,  generate questions on complex logic, data-structure, advanced language features, object-oriented patterns.
 
             ### Requirements:
-            1. Each generated question should have a different title, avoid using the same starting phrase (e.g, what is the output of the code....). The questions/title shouldn't be boring, apply wit and logic to each generated question.
-            2. Avoid redundant or overly similar questions (e.g., don’t create multiple questions about the output of a code, `len()` or simple print statements). Ensure to touch different topics and apply different logic in the generated question, regardless of the difficulty. 
+            1. **COMPLETENESS IS THE ABSOLUTE PRIORITY.** Do not generate incomplete questions. **If a question refers to a code snippet, that *full and complete* code snippet MUST be included directly within the 'title' field.** For example, "What's the final output of this JavaScript code snippet?" is incomplete without the actual snippet. Each generated question should have a different title, avoid using the same starting phrase (e.g, what is the output of the code....). The questions/title shouldn't be boring, apply wit and logic to each generated question.
+            2. Avoid redundant or overly similar questions (e.g., don’t create multiple questions about the output of a code, `len()` or simple print statements). Ensure to touch different topics and apply different logic in the generated question, regardless of the difficulty.
             3. Ensure conceptual diversity:
             - Cover a variety of topics like booleans, arithmetic, string ops, indexing, control flow, functions, error handling, and common algorithms.
             4. Keep the question titles clear, concise, and semantically distinct from one another.
-          
-           
-            5. Ensure that the question title is complete and logical. Do not generate, incomplete questions
+
+            5. **CRITICAL REQUIREMENT: The 'title' field MUST contain the *entire* question, including any and all code snippets, examples, or data structures that the question refers to. Never generate a 'title' that requires external context (like a missing code block).**
 
             ### Output Format:
             For each question, return:
-            - `title`: The question to display. This shpould be the question to display not the name of the topic but the question itself
+            - `title`: The *complete* question to display, including *all* necessary code blocks and context. This should be the question to display, not just the name of the topic, but the full, self-contained question.
             - `options`: A list of 4 plausible answers (only ONE correct).
             - `correct_answer_id`: Index (0-based) of the correct option.
             - `explanation`: A clear, accurate explanation justifying the correct answer.
 
-            NOTE: the "title" key/attribute is where the full question should be placed. Include all question code blocks.
             Please ensure random placement of the correct answer among the options.
-            Do NOT generate, INCOMPLETE questions
-
+            **FINAL REMINDER: DO NOT generate INCOMPLETE questions. Every 'title' must be self-contained and include all referenced code.**
             """
         
        
@@ -75,4 +72,5 @@ def generate_questions_with_ai(state: State) -> State:
         return state
     except Exception as e:
         print(str(e))
+
 
